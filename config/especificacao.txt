@@ -1,0 +1,65 @@
+1 O que é e como funciona o Sandbox?
+Sandbox é um ambiente onde você pode testar a sua implementação sem precisar efetuar movimentações financeiras reais. Com ele, você pode testar diversos cenários sem afetar a sua conta de produção.
+===================================================================
+
+
+4 vou no guzz: http://docs.guzzlephp.org/en/stable/overview.html
+copio:{
+   "require": {
+      "guzzlehttp/guzzle": "^7.0"
+   }
+}
+vou no composer e colo essa nova dependência e atualizo
+laravel collective: https://laravelcollective.com/docs/5.4/html/
+e colo composer require "laravelcollective/html":"^5.4.0"
+vou em config/app e colo:  Collective\Html\HtmlServiceProvider::class,
+  'Form' => Collective\Html\FormFacade::class,
+  'Html' => Collective\Html\HtmlFacade::class,
+==========================================================
+5 Documentação: https://dev.pagseguro.uol.com.br/documentacao/pagamento-online/pagamentos
+
+faço uma conta---->vou em venda online----->link de pagamento
+
+copia link:https://pag.ae/7WjurheVn
+botão: <!-- INICIO DO BOTAO PAGSEGURO --><a href="https://pag.ae/7WjurheVn/button" target="_blank" title="Pagar com PagSeguro"><img src="//assets.pagseguro.com.br/ps-integration-assets/botoes/pagamentos/205x30-pagar.gif" alt="Pague com PagSeguro - é rápido, grátis e seguro!" /></a><!-- FIM DO BOTAO PAGSEGURO -->
+
+crio nova rota:
+==============================================================
+6 config/pagseguo.php 
+vendedor de teste:https://sandbox.pagseguro.uol.com.br/vendedor/configuracoes.html
+
+token: C0FDD7FFCDBB481586A82127005B3B2C
+
+Vou no .env e volto pra pagseguro.php: para buscar dados -> https://dev.pagseguro.uol.com.br/reference/transferencia
+=============================================================
+7 controller e model
+Comprador de teste
+Para testar o checkout com um comprador cadastrado, utilize o e-mail abaixo. Caso sinta a necessidade de fazer um checkout com um usuário não cadastrado, basta informar qualquer e-mail no formato xxxxxxx@sandbox.pagseguro.com.br.
+
+Este comprador de teste só pode ser utilizado para se autenticar no checkout do PagSeguro Sandbox.
+
+Email: c45179611178859634334@sandbox.pagseguro.com.brcopiar
+Senha: GuKVrUW4ucM0YeHmcopiar
+Cartão de crédito de testes
+Você pode utilizar o cartão abaixo para fazer seus testes no checkout do Sandbox.
+
+Número: 4111111111111111
+Bandeira: VISA Válido até: 12/2030 CVV: 123
+===================================================================
+8 integração com lightbox vou em config/pagseguro
+doc para lightbox:https://dev.pagseguro.uol.com.br/documentacao/pagamento-online/pagamentos/pagamento-lightbox
+==================================================================
+11 pagseguro checkout transparente
+https://dev.pagseguro.uol.com.br/reference/checkout-transparente
+
+iniciando uma sessão de pagamento(todos os meios de pag)
+https://ws.sandbox.pagseguro.uol.com.br/v2/sessions vou em config/pagseguro
+===================================================================
+15 pagmento por boleto
+https://dev.pagseguro.uol.com.br/documentacao/pagamento-online/pagamentos/pagamento-transparente#efetuar-pagamento
+
+como analisar o retorno em requisições AJAX: https://drive.google.com/open?id=1luY-T_tbTbqaN6iUuHd7xNGPjo60kM75
+
+
+
+
