@@ -41,6 +41,7 @@
 		{!! Form::close() !!}
 		<!--primeiro a ser carregado é a setSessionId e a getBrand demora um pouco então vamos fazer um preload-->
 		<div class="preloader" style="display: none;">Preloader...</div>
+		<div class="message" style="display: none;"></div>
 	</div>
 
 	<!--jQuery-->
@@ -58,7 +59,7 @@
         			return false;
         		});
         	});
-
+        	//function recupera a sessão
         	function setSessionId()
             {
                 var data = $('#form').serialize();
@@ -77,7 +78,7 @@
                 	endPreloader();
                 });
             }
-
+            //function q recupera a bandeira do cartão q é a marca do cartão
             function getBrand()
             {
             	//alert($('input[name=cardNumber').val().replace(/ /g, ''));
@@ -95,7 +96,7 @@
             				createCredCardToken(response.brand.name);
             				
             		},
-            		erro: function(response) {
+            		error: function(response) {
 
             				console.log("Error getBrand");
             				console.log(response);
@@ -108,6 +109,7 @@
             		}
             	});
             }
+            //function q gera o token do cartão
             //criando o token do cartão
             function createCredCardToken()
             {
@@ -127,8 +129,10 @@
             				console.log(response);
             				//agora vamos recuperar o token
             				$("input[name=cardToken]").val(response.card.token);
+            				//depois de realizado essa busca pelo token chamo o método para executar a transação em si, q inicia o precesso de pagamento
+            				createTransactionCard();
             		},
-            		erro: function(response) {
+            		error: function(response) {
             				console.log("Error createCardToken");
             				console.log(response);
             		},
@@ -138,6 +142,27 @@
             		}
 
             	});
+            }
+
+            function createTransactionCard()
+            {	
+            	var senderHash = PagSeguroDirectPayment.getSenderHash();
+            	var data = $('#form').serialize()+"&senderHash="+senderHash;
+                $.ajax({
+                    url: "{{route('pagseguro.card.transaction')}}",
+                    method: "POST",
+                    data: data,
+                    beforeSend: startPreloader("Realizando o pagamento com catão.")
+                }).done(function(code){
+                	//console.log(data);
+                    //alert(data);
+                    $(".message").html("Código da transação: "+code);
+                    $(".message").show();
+                }).fail(function(){
+                    alert("Fail request... :-(");
+                }).always(function () {
+                	endPreloader();
+                });
             }
             //se quise pode mandar uma mensagem usando um parâmetro
             function startPreloader(msgPreloader)
@@ -156,6 +181,28 @@
             	//aqui eu removo a desabilitação
             	$('.btn-buy').removeClass('disabled');
             }
+            /*
+            	var senderHash = PagSeguroDirectPayment.getSenderHash();
+            	//aqui pego todos os dados q vem do formulário
+            	var data = $('#form').serialize()+"&senderHash="+senderHash;
+                $.ajax({
+                	//passando o nome da rota ou url é a mesma coisa
+                    url: "{{route('pagseguro.card.transaction')}}",
+                    method: "POST",
+                    data: data,
+                    beforeSend: startPreloader("Realizando o pagamento com o cartão.")
+                }).done(function(data){
+                	$(".message").html("Código da transação: "+code);
+                	$(".message").show();
+                    //PagSeguroDirectPayment.setSessionId(data);
+                    //dou um alert na var data ou um console
+                    console.log(data);
+                    alert(data);
+                }).fail(function(){
+                    alert("Fail request... :-(");
+                }).always(function () {
+                	endPreloader();
+                });*/
         </script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </body>

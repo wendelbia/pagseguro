@@ -1,0 +1,150 @@
+@extends('store.layouts.main')
+
+@section('content')
+<h1 class="title">Escolha o meio de pagamento</h1>
+
+<div class="text-center">
+    <div class="col-md-6">
+        <!--botão q gera o evento de click que chama o sessionId-->
+    	<a href="#" id="payment-billet">
+	        <img src="{{url('assets/imgs/billet.png')}}" alt="Boleto" style="max-width: 100px;">
+	        <p>Boleto</p>
+	    </a>
+	    
+    </div>
+    <!--
+    <div class="col-md-6">
+    	<a href="">
+	        <img src="" alt="Cartão" style="max-width: 100px;">
+	        <p>Cartão</p>
+	    </a>
+    </div>-->
+    <!--usar display none para não usar agora-->
+    <div class="preloader" style="display: none;">
+        <img src="{{url('assets/imgs/preloader.gif')}}" alt="Preloader" style="max-width: 50px;">
+    </div>
+    {!! Form::open(['id' => 'form']) !!}
+    <!--pego o valor do token através do csrf()-->
+    {!! Form::close() !!}
+</div>
+    
+@endsection
+
+@push('scripts')
+<!--URL PagSeguro Transparent no arquivo de configue ele ficou sem o sandbox-->
+<script src="{{config('pagseguro.url_transparent_js')}}"></script>
+<script>
+    $(function(){
+        //quando cliclar na imagem entrar em eveto de click chama o setSessionId, quando cliclar chama o método
+		$("#payment-billet").click(function(){
+			//chamo 
+			setSessionId();
+
+            //chamo o preloader
+            $(".preloader").show();
+			//return false para não continuar a requisição do link
+			return false;
+        });
+    });
+//esse método por sua vez pega os dados do formulario pra fzer 1 requisição post, ele retorna um id pra fazer o pagamento transferência
+	function setSessionId()
+    {
+        //pega o token através do csrf, aqui peda todos os dados do formulário
+    	var data = $('form#form').serialize();
+
+        $.ajax({
+            //crio essa rota q é do tipo post
+            url: "{{route('pagseguro.code.transparent')}}",
+            method: "POST",
+            //e envio essa data q é o vl do csrf
+            data: data
+        }).done(function(data){
+            console.log(data);
+        	//chamo essa classe q é referente a api do pagseguro e o setSessionId chamda a data q é o retorno da nossa requisição, setando o id q ele retorna, no link do js tem essa classe
+            PagSeguroDirectPayment.setSessionId(data);
+            //chamo o metodo de pag com boleto
+            paymentBillet();
+        }).fail(function() {
+            //quero usar o preloader apenas se der falha, portanto coloco ele aqui, show mostra e hider oculta
+            $(".preloader").hide();
+            alert("Fail request... :-(");
+            //cada chmada ajax coloco esse método para o preloader
+        }).always(function() {
+
+        });
+    }
+    
+    function paymentBillet()
+    {
+    	//recupero a hash q é preciso para validar a requisição, primeiro pedi a sessão depois pega essa hash
+        var sendHash = PagSeguroDirectPayment.getSenderHash();
+        //pega o vl de csrf e o sendeHash q é o vl achado para validar a transação  
+        var data = $('#form').serialize()+"&sendHash="+sendHash;
+
+        $.ajax({
+            //e faz a requisição p rota de pagamento com boleto
+            url: "{{route('pagseguro.billet')}}",
+            method: "POST",
+            //data: data
+            data: data
+        }).done(function(url){
+            console.log(url);
+            //o retorno é $xml->paymentLink da function getBillet do PagSeguro.php e já redireciona para o link de pg com boleto
+            location.href=url;
+        }).fail(function(){
+            alert("Fail request... :-(");
+        }).always(function() {
+            $(".preloader").hide();
+        });
+    }
+</script>
+@endpush	
+
+<!--URL PagSeguro Transparent-->
+<script src="{{config('pagseguro.url_transparent_js')}}"></script>
+
+<script>
+    $(function(){
+        $("#payment-billet").click(function(){
+            setSessionId();
+            
+            return false;
+        });
+    });
+    
+    function setSessionId()
+    {
+        var data = $('form#form').serialize();
+
+        $.ajax({
+            url: "{{route('pagseguro.code.transparent')}}",
+            method: "POST",
+            data: data
+        }).done(function(data){
+            console.log(data);
+            PagSeguroDirectPayment.setSessionId(data);
+            paymentBillet();
+        }).fail(function(){
+            alert("Fail request... :-(");
+        });
+    }
+    
+    function paymentBillet()
+    {
+        var sendHash = PagSeguroDirectPayment.getSenderHash();
+
+        var data = $('#form').serialize()+"&sendHash="+sendHash;
+
+        $.ajax({
+            url: "{{route('pagseguro.billet')}}",
+            method: "POST",
+            data: data
+        }).done(function(url){
+            console.log(url);
+
+            location.href=url;
+        }).fail(function(){
+            alert("Fail request diga o erro... :-(");
+        });
+    }
+</script>    
